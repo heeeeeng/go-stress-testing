@@ -44,7 +44,7 @@ func main() {
 
 	// 解析参数
 	flag.Parse()
-	if concurrency == 0 || totalNumber == 0 || (requestUrl == "" && path == "") {
+	if concurrency == 0 || (totalNumber == 0 && paths == "") || (requestUrl == "" && path == "" && paths == "") {
 		fmt.Printf("示例: go run main.go -c 1 -n 1 -u https://www.baidu.com/ \n")
 		fmt.Printf("压测地址或curl路径必填 \n")
 		fmt.Printf("当前请求参数: -c %d -n %d -d %v -u %s \n", concurrency, totalNumber, debugStr, requestUrl)
@@ -70,7 +70,7 @@ func main() {
 		// 开始处理
 		server.Dispose(concurrency, totalNumber, request)
 	} else {
-		requests, err := model.NewRequestMulti(path, verify, 0, debug)
+		requests, err := model.NewRequestMulti(paths, verify, 0, debug)
 		if err != nil {
 			fmt.Printf("参数不合法 %v \n", err)
 
@@ -79,6 +79,6 @@ func main() {
 		fmt.Printf("\n 开始启动  并发数:%d 请求数:%d 请求参数: \n", concurrency, len(requests))
 		server.DisposeMulti(concurrency, requests)
 	}
-	
+
 	return
 }

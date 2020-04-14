@@ -127,10 +127,10 @@ func NewRequestMulti(path string, verify string, timeout time.Duration, debug bo
 
 	requests = make([]*Request, 0)
 	for _, curl := range curls {
-		url := curl.GetUrl()
-		method := curl.GetMethod()
-		headers := curl.GetHeaders()
-		body := curl.GetBody()
+		url := curl.URL
+		method := curl.Method
+		headers := curl.Header
+		body := curl.Data
 
 		request, err := newRequest(url, verify, timeout, debug, method, headers, body)
 		if err != nil {

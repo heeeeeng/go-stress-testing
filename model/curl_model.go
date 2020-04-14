@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 )
@@ -58,14 +59,14 @@ func ParseTheFile(path string) (curl *CURL, err error) {
 	return
 }
 
-func ParseTheFileMulti(path string) (curls []*CURL, err error) {
+func ParseTheFileMulti(path string) (curls []*CURLJson, err error) {
 	if path == "" {
 		err = errors.New("路径不能为空")
 
 		return
 	}
 
-	curls = make([]*CURL, 0)
+	curls = make([]*CURLJson, 0)
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -81,7 +82,7 @@ func ParseTheFileMulti(path string) (curls []*CURL, err error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		oneLineStr := scanner.Text()
-		curl := newCurlFromStr(oneLineStr)
+		curl := newCurlJsonFromJsonStr(oneLineStr)
 		curls = append(curls, curl)
 	}
 	return curls, nil
@@ -118,6 +119,22 @@ func newCurlFromStr(dataStr string) *CURL {
 	}
 
 	return curl
+}
+
+type CURLJson struct {
+	URL string `json:"url"`
+	Method string `json:"method"`
+	Header map[string]string `json:"header"`
+	Data string `json:"data"`
+}
+
+func newCurlJsonFromJsonStr(jsonStr string) *CURLJson {
+	var curlJson CURLJson
+	err := json.Unmarshal([]byte(jsonStr), &curlJson)
+	if err != nil {
+		log.Panicf("unmashal json error: %v", err)
+	}
+	return &curlJson
 }
 
 func (c *CURL) String() (url string) {
