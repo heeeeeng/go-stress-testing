@@ -24,33 +24,48 @@ func Http(chanId uint64, ch chan<- *model.RequestResults, totalNumber uint64, wg
 
 	// fmt.Printf("启动协程 编号:%05d \n", chanId)
 	for i := uint64(0); i < totalNumber; i++ {
-
-		var (
-			startTime = time.Now()
-			isSucceed = false
-			errCode   = model.HttpOk
-		)
-
-		resp, err := client.HttpRequest(request.Method, request.Url, request.GetBody(), request.Headers, request.Timeout)
-		requestTime := uint64(heper.DiffNano(startTime))
-		// resp, err := server.HttpGetResp(request.Url)
-		if err != nil {
-			errCode = model.RequestErr // 请求错误
-		} else {
-			// 验证请求是否成功
-			errCode, isSucceed = request.VerifyHttp(request, resp)
-		}
-
-		requestResults := &model.RequestResults{
-			Time:      requestTime,
-			IsSucceed: isSucceed,
-			ErrCode:   errCode,
-		}
-
-		requestResults.SetId(chanId, i)
-
-		ch <- requestResults
+		doHttp(chanId, ch, request, i)
 	}
 
 	return
+}
+
+func HttpReqs(chanId uint64, ch chan<- *model.RequestResults, wg *sync.WaitGroup, requests []*model.Request) {
+	defer func() {
+		wg.Done()
+	}()
+
+	// fmt.Printf("启动协程 编号:%05d \n", chanId)
+	for i, request := range requests {
+		doHttp(chanId, ch, request, uint64(i))
+	}
+
+	return
+}
+
+func doHttp(chanId uint64, ch chan<- *model.RequestResults, request *model.Request, iterNum uint64) {
+	var (
+		startTime = time.Now()
+		isSucceed = false
+		errCode   = model.HttpOk
+	)
+
+	resp, err := client.HttpRequest(request.Method, request.Url, request.GetBody(), request.Headers, request.Timeout)
+	requestTime := uint64(heper.DiffNano(startTime))
+	// resp, err := server.HttpGetResp(request.Url)
+	if err != nil {
+		errCode = model.RequestErr // 请求错误
+	} else {
+		// 验证请求是否成功
+		errCode, isSucceed = request.VerifyHttp(request, resp)
+	}
+
+	requestResults := &model.RequestResults{
+		Time:      requestTime,
+		IsSucceed: isSucceed,
+		ErrCode:   errCode,
+	}
+	requestResults.SetId(chanId, iterNum)
+
+	ch <- requestResults
 }

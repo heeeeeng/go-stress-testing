@@ -31,6 +31,7 @@ func main() {
 		requestUrl  string // 压测的url 目前支持，http/https ws/wss
 		path        string // curl文件路径 http接口压测，自定义参数设置
 		verify      string // verify 验证方法 在server/verify中 http 支持:statusCode、json webSocket支持:json
+		paths		string // curl文件路径 http接口压测，自定义参数设置，用于存放多条请求
 	)
 
 	flag.Uint64Var(&concurrency, "c", 1, "并发数")
@@ -39,6 +40,7 @@ func main() {
 	flag.StringVar(&requestUrl, "u", "", "压测地址")
 	flag.StringVar(&path, "p", "", "curl文件路径")
 	flag.StringVar(&verify, "v", "", "验证方法 http 支持:statusCode、json webSocket支持:json")
+	flag.StringVar(&paths, "ps", "", "批量处理curl文件请求")
 
 	// 解析参数
 	flag.Parse()
@@ -53,18 +55,30 @@ func main() {
 	}
 
 	debug := strings.ToLower(debugStr) == "true"
-	request, err := model.NewRequest(requestUrl, verify, 0, debug, path)
-	if err != nil {
-		fmt.Printf("参数不合法 %v \n", err)
 
-		return
+	if paths == "" {
+		request, err := model.NewRequest(requestUrl, verify, 0, debug, path)
+		if err != nil {
+			fmt.Printf("参数不合法 %v \n", err)
+
+			return
+		}
+
+		fmt.Printf("\n 开始启动  并发数:%d 请求数:%d 请求参数: \n", concurrency, totalNumber)
+		request.Print()
+
+		// 开始处理
+		server.Dispose(concurrency, totalNumber, request)
+	} else {
+		requests, err := model.NewRequestMulti(path, verify, 0, debug)
+		if err != nil {
+			fmt.Printf("参数不合法 %v \n", err)
+
+			return
+		}
+		fmt.Printf("\n 开始启动  并发数:%d 请求数:%d 请求参数: \n", concurrency, len(requests))
+		server.DisposeMulti(concurrency, requests)
 	}
-
-	fmt.Printf("\n 开始启动  并发数:%d 请求数:%d 请求参数: \n", concurrency, totalNumber)
-	request.Print()
-
-	// 开始处理
-	server.Dispose(concurrency, totalNumber, request)
-
+	
 	return
 }

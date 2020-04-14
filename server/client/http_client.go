@@ -25,6 +25,7 @@ func HttpRequest(method, url string, body io.Reader, headers map[string]string, 
 
 	// 跳过证书验证
 	tr := &http.Transport{
+		DisableKeepAlives: true,
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 

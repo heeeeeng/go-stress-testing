@@ -116,6 +116,33 @@ func NewRequest(url string, verify string, timeout time.Duration, debug bool, pa
 		headers = curl.GetHeaders()
 		body = curl.GetBody()
 	}
+	return newRequest(url, verify, timeout, debug, method, headers, body)
+}
+
+func NewRequestMulti(path string, verify string, timeout time.Duration, debug bool) (requests []*Request, err error) {
+	curls, err := ParseTheFileMulti(path)
+	if err != nil {
+		return nil, err
+	}
+
+	requests = make([]*Request, 0)
+	for _, curl := range curls {
+		url := curl.GetUrl()
+		method := curl.GetMethod()
+		headers := curl.GetHeaders()
+		body := curl.GetBody()
+
+		request, err := newRequest(url, verify, timeout, debug, method, headers, body)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, request)
+	}
+	return requests, nil
+}
+
+
+func newRequest(url string, verify string, timeout time.Duration, debug bool, method string, headers map[string]string, body string) (*Request, error) {
 
 	form := ""
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
@@ -125,9 +152,8 @@ func NewRequest(url string, verify string, timeout time.Duration, debug bool, pa
 	}
 
 	if form == "" {
-		err = errors.New(fmt.Sprintf("url:%s 不合法,必须是完整http、webSocket连接", url))
-
-		return
+		err := errors.New(fmt.Sprintf("url:%s 不合法,必须是完整http、webSocket连接", url))
+		return nil, err
 	}
 
 	var (
@@ -146,9 +172,7 @@ func NewRequest(url string, verify string, timeout time.Duration, debug bool, pa
 		key := fmt.Sprintf("%s.%s", form, verify)
 		verifyHttp, ok = verifyMapHttp[key]
 		if !ok {
-			err = errors.New("验证器不存在:" + key)
-
-			return
+			return nil, errors.New("验证器不存在:" + key)
 		}
 	case FormTypeWebSocket:
 		// verify
@@ -159,18 +183,15 @@ func NewRequest(url string, verify string, timeout time.Duration, debug bool, pa
 		key := fmt.Sprintf("%s.%s", form, verify)
 		verifyWebSocket, ok = verifyMapWebSocket[key]
 		if !ok {
-			err = errors.New("验证器不存在:" + key)
-
-			return
+			return nil, errors.New("验证器不存在:" + key)
 		}
-
 	}
 
 	if timeout == 0 {
 		timeout = 3 * time.Second
 	}
 
-	request = &Request{
+	request := &Request{
 		Url:             url,
 		Form:            form,
 		Method:          strings.ToUpper(method),
@@ -182,9 +203,7 @@ func NewRequest(url string, verify string, timeout time.Duration, debug bool, pa
 		Timeout:         timeout,
 		Debug:           debug,
 	}
-
-	return
-
+	return request, nil
 }
 
 // 打印

@@ -8,6 +8,7 @@
 package model
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -52,6 +53,45 @@ func ParseTheFile(path string) (curl *CURL, err error) {
 	}
 
 	dataStr := string(data)
+	curl = newCurlFromStr(dataStr)
+
+	return
+}
+
+func ParseTheFileMulti(path string) (curls []*CURL, err error) {
+	if path == "" {
+		err = errors.New("路径不能为空")
+
+		return
+	}
+
+	curls = make([]*CURL, 0)
+
+	file, err := os.Open(path)
+	if err != nil {
+		err = errors.New("打开文件失败:" + err.Error())
+
+		return
+	}
+
+	defer func() {
+		file.Close()
+	}()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		oneLineStr := scanner.Text()
+		curl := newCurlFromStr(oneLineStr)
+		curls = append(curls, curl)
+	}
+	return curls, nil
+}
+
+func newCurlFromStr(dataStr string) *CURL {
+	curl := &CURL{
+		Data: make(map[string][]string),
+	}
+
 	for true {
 		index := strings.Index(dataStr, "'")
 		if index <= 0 {
@@ -77,7 +117,7 @@ func ParseTheFile(path string) (curl *CURL, err error) {
 
 	}
 
-	return
+	return curl
 }
 
 func (c *CURL) String() (url string) {
