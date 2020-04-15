@@ -8,7 +8,6 @@
 package client
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,14 +23,14 @@ import (
 func HttpRequest(method, url string, body io.Reader, headers map[string]string, timeout time.Duration) (resp *http.Response, err error) {
 
 	// 跳过证书验证
-	tr := &http.Transport{
-		DisableKeepAlives: true,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	//tr := &http.Transport{
+	//
+	//	DisableKeepAlives: true,
+	//	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	//}
 
 	client := &http.Client{
-		Transport: tr,
-		Timeout:   timeout,
+		Timeout: timeout,
 	}
 
 	req, err := http.NewRequest(method, url, body)

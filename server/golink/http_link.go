@@ -11,6 +11,8 @@ import (
 	"go-stress-testing/heper"
 	"go-stress-testing/model"
 	"go-stress-testing/server/client"
+	"io"
+	"io/ioutil"
 	"sync"
 	"time"
 )
@@ -58,6 +60,8 @@ func doHttp(chanId uint64, ch chan<- *model.RequestResults, request *model.Reque
 	} else {
 		// 验证请求是否成功
 		errCode, isSucceed = request.VerifyHttp(request, resp)
+		io.Copy(ioutil.Discard, resp.Body) // <-- add this line to prevent time_wait
+		resp.Body.Close()
 	}
 
 	requestResults := &model.RequestResults{

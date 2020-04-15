@@ -103,14 +103,15 @@ func HttpJson(request *model.Request, response *http.Response) (code int, isSucc
 	return
 }
 
-
 /***************************  Ants充值平台专用  ********************************/
 
 // 返回数据结构体
 type ResponseAnts struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg"`
-	Success bool `json:"success"`
+	Code    int    `json:"code"`
+	Msg     string `json:"msg"`
+	Data    string `json:"data"`
+	Success bool   `json:"success"`
+	Step    string `json:"step"`
 }
 
 func HttpVerifyAnts(request *model.Request, response *http.Response) (code int, isSucceed bool) {
@@ -123,9 +124,10 @@ func HttpVerifyAnts(request *model.Request, response *http.Response) (code int, 
 	var respAnts ResponseAnts
 	json.Unmarshal(body, &respAnts)
 	if respAnts.Success {
+		fmt.Println("OKKKK", request.Headers["userId"], respAnts.Msg, respAnts.Step)
 		return 200, true
 	}
 	// TODO delete print later
-	fmt.Println("request error: ", respAnts.Msg)
-	return 200, true
+	fmt.Println("request error", request.Headers["userId"], respAnts.Msg, respAnts.Step)
+	return respAnts.Code, true
 }
