@@ -70,7 +70,7 @@ func main() {
 		// 开始处理
 		server.Dispose(concurrency, totalNumber, request)
 	} else {
-		requests, err := model.NewRequestMulti(paths, verify, 0, debug)
+		requests, err := model.NewRequestMulti(paths, "ants", 0, debug)
 		if err != nil {
 			fmt.Printf("参数不合法 %v \n", err)
 

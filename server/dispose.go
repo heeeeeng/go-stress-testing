@@ -28,6 +28,7 @@ func init() {
 	// http
 	model.RegisterVerifyHttp("statusCode", verify.HttpStatusCode)
 	model.RegisterVerifyHttp("json", verify.HttpJson)
+	model.RegisterVerifyHttp("ants", verify.HttpVerifyAnts)
 
 	// webSocket
 	model.RegisterVerifyWebSocket("json", verify.WebSocketJson)

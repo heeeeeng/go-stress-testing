@@ -24,7 +24,7 @@ var baseHeader = map[string]string{
 
 func main() {
 	fileName := "curlList"
-	curlNum := 10000
+	curlNum := 20
 	eventCode := "LBJN202000420"
 
 	f, err := os.Create(fileName)
@@ -34,12 +34,19 @@ func main() {
 	}
 	defer f.Close()
 
-	getUrlStr := registerUser(eventCode)
+	//getUrlStr := registerUser(eventCode)
+	//for i := 0; i < curlNum; i++ {
+	//	f.WriteString(getUrlStr + "\n")
+	//}
+
+	prdId := "9"
+	itemId := "32"
+	accountType := "1"
+	quantity := "1"
+	getUrlStr := order(eventCode, prdId, itemId, accountType, quantity)
 	for i := 0; i < curlNum; i++ {
 		f.WriteString(getUrlStr + "\n")
 	}
-
-	//model.ParseTheFileMulti(fileName)
 }
 
 func getUrl(eventCode string) string {
@@ -51,6 +58,24 @@ func registerUser(eventCode string) string {
 	url := HOST + URL_REGISTER_USER
 	data := map[string]string{
 		"eventCode": eventCode,
+	}
+	return postStr(url, baseHeader, data)
+}
+
+func order(eventCode, prdId, itemId, accoutType, quantity string) string {
+	orderKey := "5NVpDSmrqnSTbx3RQaeACdezjd885Fsv"
+
+	url := fmt.Sprintf(HOST + URL_ORDER, orderKey)
+	data := map[string]string{
+		"eventCode": eventCode,
+		"productId": prdId,
+		"itemId": itemId,
+		"accountType": accoutType,
+		"rechargeAccount": "3298423",
+		"quantity": quantity,
+		"did": "did",
+		"token": "xx",
+		"sid": "sid",
 	}
 	return postStr(url, baseHeader, data)
 }

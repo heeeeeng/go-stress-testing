@@ -14,6 +14,7 @@ import (
 	"go-stress-testing/model"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -100,4 +101,31 @@ func HttpJson(request *model.Request, response *http.Response) (code int, isSucc
 	}
 
 	return
+}
+
+
+/***************************  Ants充值平台专用  ********************************/
+
+// 返回数据结构体
+type ResponseAnts struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Success bool `json:"success"`
+}
+
+func HttpVerifyAnts(request *model.Request, response *http.Response) (code int, isSucceed bool) {
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Panicf("read response body error: %v", err)
+	}
+
+	var respAnts ResponseAnts
+	json.Unmarshal(body, &respAnts)
+	if respAnts.Success {
+		return 200, true
+	}
+	// TODO delete print later
+	fmt.Println("request error: ", respAnts.Msg)
+	return 200, true
 }
